@@ -36,10 +36,6 @@ void *malloc(size_t size)
 
 void free(void *p) 
 {
-    if (INITIALIZED) {
-        mtrace_init();
-    }
-
     real_free(p);
     if (p)
     {
