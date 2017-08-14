@@ -31,7 +31,7 @@ void *malloc(size_t size)
     }
 
     void *p = NULL;
-    fprintf(stderr, "malloc(%d) = ", size);
+    fprintf(stderr, "malloc(%lu) = ", size);
     p = real_malloc(size);
     fprintf(stderr, "%p\n", p);
     return p;
@@ -45,7 +45,7 @@ void *calloc(size_t nmbem, size_t size)
     }
 
     void *p = NULL;
-    fprintf(stderr, "calloc(%d, %d) = ", nmbem, size);
+    fprintf(stderr, "calloc(%lu, %lu) = ", nmbem, size);
     p = real_calloc(nmbem, size);
     fprintf(stderr, "%p\n", p);
     return p;
@@ -58,7 +58,7 @@ void *realloc(void *p, size_t size)
     }
 
     void *ptr = NULL;
-    fprintf(stderr, "realloc(%p, %d) = ", p, size);
+    fprintf(stderr, "realloc(%p, %lu) = ", p, size);
     ptr = real_realloc(p, size);
     fprintf(stderr, "%p\n", p);
     return p;
