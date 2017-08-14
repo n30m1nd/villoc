@@ -83,7 +83,7 @@ class Block(Printable):
     classes = Printable.classes + ["normal"]
 
     def __init__(self, addr, size, error=False, tmp=False, **kwargs):
-        self.color = kwargs.get('color', random_color())
+        self.color = kwargs.get('color', get_color(size-header))
         self.uaddr = addr
         self.usize = size
         self.details = True
@@ -297,14 +297,13 @@ def build_timeline(events):
     return timeline, boundaries
 
 
-def random_color(r=200, g=200, b=125):
-
-    red = (random.randrange(0, 256) + r) / 2
-    green = (random.randrange(0, 256) + g) / 2
-    blue = (random.randrange(0, 256) + b) / 2
-
-    return (red, green, blue)
-
+def get_color(size):
+    if size < 160:
+        return (0xAA, 0x20, 0x70)
+    elif size < 1024:
+        return (0x33, 0x33, 0xFF)
+    else:
+        return (0xDF, 0x90, 0x30)
 
 def print_state(out, boundaries, state):
 
