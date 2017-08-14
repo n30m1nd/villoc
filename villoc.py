@@ -83,7 +83,7 @@ class Block(Printable):
     classes = Printable.classes + ["normal"]
 
     def __init__(self, addr, size, error=False, tmp=False, **kwargs):
-        self.color = kwargs.get('color', get_color(size-header))
+        self.color = kwargs.get('color', get_color(size - self.header))
         self.uaddr = addr
         self.usize = size
         self.details = True
@@ -299,11 +299,11 @@ def build_timeline(events):
 
 def get_color(size):
     if size < 160:
-        return (0xAA, 0x20, 0x70)
+        return (0xAA, 0x60, 0xB0) # Fastchunk / purple
     elif size < 1024:
-        return (0x33, 0x33, 0xFF)
+        return (0x73, 0x73, 0xFF) # Smallchunk / blue
     else:
-        return (0xDF, 0x90, 0x30)
+        return (0xDF, 0x90, 0x30) # Largechunk / orange
 
 def print_state(out, boundaries, state):
 
