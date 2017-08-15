@@ -1,14 +1,13 @@
-SHELL = /bin/sh
 CC    = gcc
-CFLAGS = -fPIC -pedantic -Wall -Wextra -march=native -shared
+CFLAGS = -fPIC -shared -Wall
 LIBS = -ldl
-
+SOURCES = libvilloc.c
 TARGET  = libvilloc.so
 
 all: $(TARGET)
 
 $(TARGET) : $(OBJECTS)
-	$(CC) $(CFLAGS) $(LIBS) -o $(TARGET)
+	$(CC) $(SOURCES) $(CFLAGS) $(LIBS) -o $(TARGET)
 
 clean : 
 	rm libvilloc.so
