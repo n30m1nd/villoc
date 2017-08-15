@@ -3,7 +3,7 @@
 // Compile with: 
 //   gcc malloc_preload.c -fPIC -shared -ldl -o malloc_preload.so
 
-#define INITIALIZED (NULL == real_malloc || NULL == real_free)
+#define INITIALIZED (NULL == real_malloc || NULL == real_free || NULL == real_calloc)
 
 #include <stdio.h>
 #include <dlfcn.h>
@@ -72,6 +72,9 @@ void *realloc(void *ptr, size_t size)
 
 void *calloc(size_t nmemb, size_t size)
 {
+    if (INITIALIZED) {
+        mtrace_init();
+    }
     void *ptr = NULL;
     if (real_calloc == NULL)
     {
