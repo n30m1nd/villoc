@@ -22,8 +22,6 @@ class State(list):
             bounds.add(hi)
         return bounds
 
-
-
 class Printable():
 
     unit_width = 10
@@ -75,7 +73,7 @@ class Empty(Printable):
 
 class Block(Printable):
 
-    header = 8
+    header = 8 # PREV_SIZE + SIZE
     footer = 0
     round = 0x10
     minsz = 0x20
@@ -83,21 +81,23 @@ class Block(Printable):
     classes = Printable.classes + ["normal"]
 
     def __init__(self, addr, size, error=False, tmp=False, **kwargs):
-        self.color = kwargs.get('color', get_color(size - self.header))
         self.uaddr = addr
         self.usize = size
         self.details = True
         self.error = error
         self.tmp = tmp
+        self.color = kwargs.get('color', get_color(size+self.header))
 
     def start(self):
-        return self.uaddr - self.header
+        # Multiply by 2, to show same addresses as malloc.c
+        return self.uaddr - self.header * 2 
 
     def end(self):
         size = max(self.minsz, self.usize + self.header + self.footer)
         rsize = size + (self.round - 1)
         rsize = rsize - (rsize % self.round)
-        return self.uaddr - self.header + rsize
+        # Multiply header by 2, to show same addresses as malloc.c
+        return self.uaddr - self.header * 2 + rsize
 
     def gen_html(self, out, width):
 
@@ -128,7 +128,6 @@ class Marker(Block):
 
     def more_html(self):
         return "unknown"
-
 
 def match_ptr(state, ptr):
 
@@ -298,7 +297,7 @@ def build_timeline(events):
 
 
 def get_color(size):
-    if size < 160:
+    if size < 128:
         return (0xAA, 0x60, 0xB0) # Fastchunk / purple
     elif size < 1024:
         return (0x73, 0x73, 0xFF) # Smallchunk / blue
@@ -525,6 +524,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     random.seed(args.seed)
+
+    # Still need to understand more the code to create a "Legend" class
+    args.out.write("<div><b>Legend: </b>Fastchunk = Purple | Smallchunk = Blue | Largechunk = Orange</div>")
 
     if args.show_seed:
         args.out.write('<h2>seed: %d</h2>' % args.seed)
