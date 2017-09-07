@@ -9,6 +9,7 @@
 #include <dlfcn.h>
 #include <string.h>
 
+// LD_PRELOAD Interceptor/Hooks
 static void* (*real_malloc)(size_t)=NULL;
 static void* (*real_calloc)(size_t, size_t)=NULL;
 static void* (*real_realloc)(void*, size_t)=NULL;
@@ -89,3 +90,5 @@ void *calloc(size_t nmemb, size_t size)
     fprintf(stderr, "calloc(%lu, %lu) = %p\n", nmemb, size, ptr);
     return ptr;
 }
+
+
