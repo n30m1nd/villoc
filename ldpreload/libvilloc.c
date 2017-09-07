@@ -3,9 +3,10 @@
 // Compile with: 
 //   gcc malloc_preload.c -fPIC -shared -ldl -o malloc_preload.so
 
-#define INITIALIZED (NULL == real_malloc || NULL == real_free || NULL == real_calloc)
+#define ISINITIALIZED (NULL == real_malloc || NULL == real_free)
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <dlfcn.h>
 #include <string.h>
 
@@ -21,14 +22,15 @@ static void mtrace_init(void)
     real_calloc = dlsym(RTLD_NEXT, "calloc");
     real_realloc = dlsym(RTLD_NEXT, "realloc");
     real_free = dlsym(RTLD_NEXT, "free");
-    if (INITIALIZED) {
+    if (ISINITIALIZED) {
         fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
+        abort();
     }
 }
 
 void *malloc(size_t size)
 {
-    if (INITIALIZED) {
+    if (ISINITIALIZED) {
         mtrace_init();
     }
 
@@ -45,7 +47,7 @@ void free(void *p)
     if (p)
     {
         fprintf(stderr, "free(%p) = <void>\n", p);
-        fprintf(stderr, "p->fd = %p\n", *(void **)(p));
+        //fprintf(stderr, "p->fd = %p\n", *(void **)(p));
     }
 }
 
@@ -60,6 +62,8 @@ void *realloc(void *ptr, size_t size)
         if (nptr && ptr)
         {
             memmove(nptr, ptr, size);
+            if (real_free == NULL) 
+                mtrace_init();
             real_free(ptr);
         }
     }
@@ -73,13 +77,10 @@ void *realloc(void *ptr, size_t size)
 
 void *calloc(size_t nmemb, size_t size)
 {
-    if (INITIALIZED) {
-        mtrace_init();
-    }
     void *ptr = NULL;
     if (real_calloc == NULL)
     {
-        ptr = real_malloc(nmemb*size);
+        ptr = malloc(nmemb*size);
         if (ptr)
             memset(ptr, 0, nmemb*size);
     }
