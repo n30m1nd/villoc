@@ -224,8 +224,9 @@ def sanitize(x):
 
 def parse_ltrace(ltrace):
 
+    #match_call = r"^([a-z_]+)\(([x0-9]+)\) += (.*)"
     match_call = r"^([a-z_]+)\((.*)\) += (.*)"
-    match_err = r"^([a-z_]+)\((.*) <no return \.\.\.>"
+    match_err = r"^([a-z_]+)\((.*)\).*no return"
 
     for line in ltrace:
 
@@ -239,6 +240,8 @@ def parse_ltrace(ltrace):
 
         try:
             func, args, ret = re.findall(match_call, line)[0]
+            if "no return" in ret:
+                raise Exception
         except Exception:
 
             try:
@@ -246,7 +249,6 @@ def parse_ltrace(ltrace):
                 func, args = re.findall(match_err, line)[0]
                 ret = None
             except Exception:
-                print("ignoring line: %s" % line, file=sys.stderr)
                 continue
 
         print("%s" % (line.strip(),), file=sys.stderr)
@@ -264,7 +266,6 @@ def build_timeline(events):
     info = []
 
     for func, args, ret in events:
-
         try:
             op = operations[func]
         except KeyError:
