@@ -285,9 +285,10 @@ def build_timeline(events):
 
         call = "%s(%s)" % (func, ", ".join("%#x" % a for a in args))
 
-        if ret is None:
+        if ret is None or str(ret) == "":
             state.errors.append("%s = <error>" % call)
         else:
+            print("ret [%s]" % ret)
             state.info.append("%s = %#x" % (call, ret))
 
         boundaries.update(state.boundaries())
