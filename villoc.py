@@ -73,7 +73,7 @@ class Empty(Printable):
 
 class Block(Printable):
 
-    header = 8 
+    header = 8
     footer = 0
     round = 0x10
     minsz = 0x20
@@ -90,7 +90,7 @@ class Block(Printable):
 
     def start(self):
         # Multiply by 2, to show same addresses as malloc.c
-        return self.uaddr - self.header * 2 
+        return self.uaddr - self.header * 2
 
     def end(self):
         size = max(self.minsz, self.usize + self.header + self.footer)
@@ -152,7 +152,6 @@ def match_ptr(state, ptr):
 
 
 def malloc(state, ret, size):
-
     if not ret:
         state.errors.append("Failed to allocate %#x bytes." % size)
     else:
@@ -225,7 +224,7 @@ def sanitize(x):
 def parse_ltrace(ltrace):
 
     #match_call = r"^([a-z_]+)\(([x0-9]+)\) += (.*)"
-    match_call = r"^([a-z_]+)\((.*)\) += (.*)"
+    match_call = r"^([a-z_]+)\((.*?)\) += (.*)"
     match_err = r"^([a-z_]+)\((.*)\).*no return"
 
     for line in ltrace:
@@ -285,7 +284,8 @@ def build_timeline(events):
             info = []
 
         call = "%s(%s)" % (func, ", ".join("%#x" % a for a in args))
-        if ret is None:
+
+        if ret is None or "=" in str(ret): # This is a really bad patch...
             state.errors.append("%s = <error>" % call)
         else:
             state.info.append("%s = %#x" % (call, ret))
