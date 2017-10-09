@@ -225,7 +225,7 @@ def parse_ltrace(ltrace):
 
     #match_call = r"^([a-z_]+)\(([x0-9]+)\) += (.*)"
     match_call = r"^([a-z_]+)\((.*?)\) += (.*)"
-    match_err = r"^([a-z_]+)\((.*)\).*no return"
+    match_err = r"^([a-z_]+)\((.*?)\).*"
 
     for line in ltrace:
 
@@ -239,7 +239,7 @@ def parse_ltrace(ltrace):
 
         try:
             func, args, ret = re.findall(match_call, line)[0]
-            if "no return" in ret:
+            if "no return" in str(ret) or "=" in str(ret):
                 raise Exception
         except Exception:
 
@@ -285,7 +285,7 @@ def build_timeline(events):
 
         call = "%s(%s)" % (func, ", ".join("%#x" % a for a in args))
 
-        if ret is None or "=" in str(ret): # This is a really bad patch...
+        if ret is None:
             state.errors.append("%s = <error>" % call)
         else:
             state.info.append("%s = %#x" % (call, ret))
