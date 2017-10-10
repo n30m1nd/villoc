@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <dlfcn.h>
 #include <string.h>
+#include <signal.h>
 
 // LD_PRELOAD Interceptor/Hooks
 static void* (*real_malloc)(size_t)=NULL;
@@ -16,17 +17,32 @@ static void* (*real_calloc)(size_t, size_t)=NULL;
 static void* (*real_realloc)(void*, size_t)=NULL;
 static void (*real_free)(void*)=NULL;
 
+void abort_handler(int i)
+{
+    fprintf(stderr, "<no return ...>\n");
+    exit(1);
+}
+
 static void mtrace_init(void)
 {
     real_malloc = dlsym(RTLD_NEXT, "malloc");
     real_calloc = dlsym(RTLD_NEXT, "calloc");
     real_realloc = dlsym(RTLD_NEXT, "realloc");
     real_free = dlsym(RTLD_NEXT, "free");
+    setenv("MALLOC_CHECK_", "2", 1);
     if (ISINITIALIZED) {
         fprintf(stderr, "Error in `dlsym`: %s\n", dlerror());
         abort();
     }
+
+    if (signal(SIGABRT, abort_handler) == SIG_ERR) {
+        fprintf(stderr, "Couldn't set signal handler\n");
+        exit(1);
+    }
 }
+
+
+// Hooking functions
 
 void *malloc(size_t size)
 {
@@ -37,17 +53,21 @@ void *malloc(size_t size)
     void *p = NULL;
     fprintf(stderr, "malloc(%lu) = ", size);
     p = real_malloc(size);
-    fprintf(stderr, "%p\n", p);
+    if (p)
+        fprintf(stderr, "%p\n", p);
+    else
+        fprintf(stderr, "<error>\n");
     return p;
 }
 
 void free(void *p) 
 {
-    real_free(p);
     if (p)
     {
-        fprintf(stderr, "free(%p) = <void>\n", p);
+        fprintf(stderr, "free(%p) = ", p);
         //fprintf(stderr, "p->fd = %p\n", *(void **)(p));
+        real_free(p);
+        fprintf(stderr, "<void>\n");
     }
 }
 
